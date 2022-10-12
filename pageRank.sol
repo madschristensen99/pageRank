@@ -35,7 +35,6 @@ contract pageRank {
     string [] listNames;
     // Every list name/title maps to a cooresponding rankedList
     mapping(string => rankedList) formedLists;
-    event listFormation(string listName, uint votes, string listHead, address owner, uint amount);
     // In order to form a list, a user submits the name of the list and initial items desired to be in the list
     function formList(string calldata listName, string calldata listHead) public payable {
         require(msg.value > 99, "Not enough dough");
@@ -49,8 +48,9 @@ contract pageRank {
         firstOwner.amountStaked = msg.value;
         formedLists[listName].listItems.push(firstListItem);
         formedLists[listName].owners.push(firstOwner);
-        // TODO: modify event emiision so that relevant informations is posted, add getter functions
-        emit listFormation(listName, firstListItem.votes, listHead, msg.sender, msg.value);
+    }
+    function getList(string calldata listName) public returns (rankedList memory returnedList) {
+        return (formedLists[listName]);
     }
    // To append the list, the name of the list and the list item are required as well as a payment to the current list owners
    event listAppend(string listHasBeenAddedTo);
@@ -106,6 +106,8 @@ contract pageRank {
         return sum;
     }
     function deposit(string calldata listName) payable public {
+        // TODO: add balance to existing stake if it exists rather than have duplicate address in owners array
+        // Going to involve changing struct of Ownership stake into a mapping instead of an array for optimization purposes - however this would colfict with desire to iterate through list to find total value
         ownershipStake memory newOwner;
         newOwner.owner = msg.sender;
         newOwner.amountStaked = msg.value;
@@ -126,6 +128,7 @@ contract pageRank {
        }
        for(uint i = createdBallots.length - 1; createdBallots[i].timeOfCreation + 86400 > block.timestamp; i--){
            /*
+           TODO: figure out what is going on here, has Voted should return true if the voter has voted and false otherwise
            if(createdBallots[i].voter == potentialVoter){
                return true;
            }
@@ -140,19 +143,19 @@ contract pageRank {
         msg.sender))) % number;
     }
 
+    // TODO: An event must be logged here. The event allows the JS to find the ballot
    function createBallot(string memory listName) public returns(ballot memory){
        require(formedLists[listName].listItems.length > 2, "List does not exist or has one or two members");
        require(hasStake(listName, msg.sender), "Does not hold a stake");
        require(!hasVoted(msg.sender), "Already voted today");
-       // TODO: Ensure that matchups arent with themselves or repeated
+       // TODO: Ensure that matchups arent with themselves or repeated - special case for n = 3
        ballot memory newBallot;
-        // make sure nobody can ever have more than five votes
-       // distribute five random matchups for the voter to vote on
+       // distributes five random matchups for the voter to vote on
        newBallot.timeOfCreation = block.timestamp;
        newBallot.ballotID = createdBallots.length;
        newBallot.voter = msg.sender;
        newBallot.nameOfList = listName;
-       for(uint j = 0; j <5; j ++){
+       for(uint j = 0; j < 5; j ++){
            newBallot.matchups [j][0] = formedLists[listName].listItems[random(formedLists[listName].listItems.length, j, 3)].listItemName;
            newBallot.matchups [j][1] = formedLists[listName].listItems[random(formedLists[listName].listItems.length, j, 7)].listItemName;
        }
