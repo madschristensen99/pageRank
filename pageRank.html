@@ -1,0 +1,249 @@
+<script type="module">
+    import { ethers } from "./ethers.min.js";
+    
+    // A Web3Provider wraps a standard Web3 provider, which is
+    // what MetaMask injects as window.ethereum into each page
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+
+    // MetaMask requires requesting permission to connect users accounts
+    await provider.send("eth_requestAccounts", []);
+
+    // The MetaMask plugin also allows signing transactions to
+    // send ether and pay to change state within the blockchain.
+    // For this, you need the account signer...
+    const signer = provider.getSigner();
+    const address = "0xc029893c4C46A4D68463c508dBeC971D23034170";
+    
+    const abi = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "listHasBeenAddedTo",
+				"type": "string"
+			}
+		],
+		"name": "listAppend",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listToAppend",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "newListItem",
+				"type": "string"
+			}
+		],
+		"name": "appendList",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listName",
+				"type": "string"
+			}
+		],
+		"name": "createBallot",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "timeOfCreation",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ballotID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "voter",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "nameOfList",
+						"type": "string"
+					},
+					{
+						"internalType": "string[2][5]",
+						"name": "matchups",
+						"type": "string[2][5]"
+					},
+					{
+						"internalType": "uint256[5]",
+						"name": "selections",
+						"type": "uint256[5]"
+					}
+				],
+				"internalType": "struct pageRank.ballot",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listName",
+				"type": "string"
+			}
+		],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "listHead",
+				"type": "string"
+			}
+		],
+		"name": "formList",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listName",
+				"type": "string"
+			}
+		],
+		"name": "getList",
+		"outputs": [
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "listItemName",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "votes",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct pageRank.listItem[]",
+						"name": "listItems",
+						"type": "tuple[]"
+					},
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "owner",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "amountStaked",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct pageRank.ownershipStake[]",
+						"name": "owners",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct pageRank.rankedList",
+				"name": "returnedList",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "timeOfCreation",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ballotID",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "voter",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "nameOfList",
+						"type": "string"
+					},
+					{
+						"internalType": "string[2][5]",
+						"name": "matchups",
+						"type": "string[2][5]"
+					},
+					{
+						"internalType": "uint256[5]",
+						"name": "selections",
+						"type": "uint256[5]"
+					}
+				],
+				"internalType": "struct pageRank.ballot",
+				"name": "ballotToBeSubmitted",
+				"type": "tuple"
+			}
+		],
+		"name": "vote",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "listName",
+				"type": "string"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+const contractInstance = new ethers.Contract(address, abi, signer);
+contractInstance.formList("firstList", "lissstItem", {value: ethers.utils.parseEther(".00001")});
+</script>
+
+This is HTML text to show up on the website. The JavaScript contained in this file connects to a contract depolyed on the Ethereum Mainnet through Metamask. The contract allows its patrons to create and modify  social lists.
