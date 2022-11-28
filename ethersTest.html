@@ -1,0 +1,178 @@
+
+This is HTML text to show up on the website. The JavaScript contained in this file connects to a contract deployed on the Ethereum Mainnet through Metamask. The contract data is read through Etherscan. The contract allows its patrons to create and modify  social lists.
+<br>
+<button type="button" id="myBtn">Click Me</button>
+
+<form>
+<label for="amountInput">Amount of ETH to send:</label>
+<input type="text" id="amountInput" name="amountInput"><br>
+<label for="nameInput">Name: </label>
+<input type="text" id="nameInput" name="nameInput"><br>
+<label for="linkInput">Link: </label>
+<input type="text" id="linkInput" name="linkInput"><br>
+</form>
+
+<div id="myDiv">
+  <h2>This is a heading in a div element</h2>
+  <p>This is some text in a div element We are loading ETH data.</p>
+</div>
+
+<script type="module">
+    import { ethers } from "./ethers.min.js";
+    
+    // A Web3Provider wraps a standard Web3 provider, which is
+    // what MetaMask injects as window.ethereum into each page
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    // MetaMask requires requesting permission to connect users accounts
+    await provider.send("eth_requestAccounts", []);
+
+    // The MetaMask plugin also allows signing transactions to
+    // send ether and pay to change state within the blockchain.
+    // For this, you need the account signer...
+    const signer = provider.getSigner();
+    const address = "0xCfCA9ee7C69b7e3596c976982d0ECB8289b59eA9";
+    
+    const abi = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "testMessage",
+				"type": "string"
+			}
+		],
+		"name": "Deposit",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "getData",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "asd",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "dataPoint",
+				"type": "string"
+			}
+		],
+		"name": "postData",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	}
+]
+// Introduces button as Element
+const button = document.getElementById("myBtn");
+// allows user to click button to generate an input
+button.addEventListener("click", myFunction);
+
+
+
+
+
+// contains what happens when the button is pressed
+function myFunction() {
+    // gets the button to work
+  document.getElementById("myBtn").innerHTML = "Hello World";
+  // determines the user input value
+  var amountOfEth = document.getElementById("amountInput").value;
+  var link = document.getElementById("linkInput").value;
+  var name = document.getElementById("nameInput").value;
+   // creates contractInstance. Every method is called using the variable name contractInstance. Whatever functions that the posted contract has, contractInstance has.
+  const contractInstance = new ethers.Contract(address, abi, signer);
+  contractInstance.postData(name, {value: ethers.utils.parseEther(amountOfEth)});
+  
+
+}
+var results2 = [];
+var results = [];
+
+// fetches content
+// https://api.etherscan.io/api?module=logs&action=getLogs&fromBlock=16062000&toBlock=latest&address=0xCfCA9ee7C69b7e3596c976982d0ECB8289b59eA9&apikey=9EAWAM5CHWUMSKSHKNNGDWD7T1D63TTTDG
+
+const Http = new XMLHttpRequest();
+// This url is the source of data, addres must be updated for each new contract
+const url='https://api.etherscan.io/api?module=logs&action=getLogs&fromBlock=16062000&toBlock=latest&address=0xCfCA9ee7C69b7e3596c976982d0ECB8289b59eA9&apikey=9EAWAM5CHWUMSKSHKNNGDWD7T1D63TTTDG';
+
+Http.onreadystatechange = () => {
+
+    var str1 = Http.responseText;
+    var responseArr = str1.split("\"");
+    for(var i = responseArr.length - 1; i > 0; i --){
+        if(responseArr[i].includes("blockNumber")){
+            var responseString = responseArr[i-2];
+    	    var hex  = responseString.toString();
+	        var str = '';
+	        for (var n = 0; n < hex.length; n += 2) {
+		        str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	        }
+	        responseString = str;
+	        // fixes problem where regex removes . for website links, needs to work for %, &, other symbols
+	        if(str.includes(".")){
+	            str = str.replaceAll(".", "_");
+	            str = str.replaceAll("/", "SLASH");
+	            str = str.replaceAll(":", "COLON");
+	            str = str.replaceAll("?", "QUESTION");
+	            str = str.replaceAll("!", "EXCLAMATION");
+	            str = str.replaceAll("%", "PERCENT");
+	            str = str.replaceAll("=", "EQUALS");
+	            str = str.replaceAll("-", "DASH");
+	            str = str.replaceAll("&", "AMPERSAND");
+	        }
+            const regex = /[^\w]/g
+            results.push(str.replaceAll(regex, ""));
+        }
+    }
+    var results2 = [];
+    for(var i = 0; i < results.length/2; i ++){
+            
+            
+        var newR = results[i].replaceAll("SLASH", "/");
+        newR = newR.replaceAll("COLON", ":");
+        newR = newR.replaceAll("_", ".");
+        newR = newR.replaceAll("QUESTION", "?");
+        newR = newR.replaceAll("EXCLAMATION", "!");
+        newR = newR.replaceAll("PERCENT", "%");
+        newR = newR.replaceAll("EQUALS", "=");
+        newR = newR.replaceAll("DASH", "-");
+        newR = newR.replaceAll("AMPERSAND", "&");
+        results2.push(newR.trim());
+    }
+
+    // activates iFrames
+    for(var i = 0; i < results2.length; i ++){
+        if(results2[i].includes(".")){
+            if(results2[i].includes("twitter.com")){
+                results2[i]= "<iframe src=\"https://twitframe.com/show?url=" + results2[i] + "\"></iframe>";
+            }
+            else if(results2[i].includes("watch?v=")){
+                results2[i] = "<iframe src=\"" + results2[i].replace("watch?v=", "embed/") + "\" allowfullscreen></iframe>";
+            }
+            else{
+                // TODO: Handle 404
+                results2[i] = "<iframe src= \"" + results2[i] + "\"></iframe>";
+            }
+        }
+        results2[i] += "<br>";
+    }
+    console.log(results2);
+    document.getElementById("myDiv").innerHTML = results2;
+}
+Http.open("GET", url);
+Http.send();
+
+
+</script>
