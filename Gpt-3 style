@@ -1,0 +1,42 @@
+body {
+  font-family: sans-serif;
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 0 20px;
+}
+
+h1, h2 {
+  color: #333;
+  font-weight: normal;
+  margin: 0 0 20px 0;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+p {
+  color: #333;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+ul {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+li {
+  margin: 0 0 10px 0;
+}
+
+a {
+  color: #337ab7;
+  text-decoration: none;
+}
