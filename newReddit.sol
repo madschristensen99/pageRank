@@ -22,7 +22,7 @@ contract ethersTest {
         else{
             urlHolders[link].stakerBalance[msg.sender] += msg.value;
             urlHolders[link].totalBalance += msg.value;
-            emit Deposit(optionalInput, msg.value, link);
+            emit Deposit(optionalInput, urlHolders[link].totalBalance, link);
         }
     }
 
